@@ -21,7 +21,7 @@ impl Chip8 {
             Err(err) => { panic!("file not found, ret{:?}!", err) },
         };
         for i in 0..data.len() {
-            self.ram.write(i + ram::RAM_START_OFFSET, data[i]);
+            self.ram.write(i + ram::RAM_START_OFFSET as usize, data[i]);
         }
     }
 }
