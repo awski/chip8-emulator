@@ -1,7 +1,7 @@
 mod chip8;
 use chip8 as emulator;
 
-// TODO: timers & sound
+// TODO(#3): timers & sound
 
 // TODO: keyboard mapping
 
