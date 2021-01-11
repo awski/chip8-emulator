@@ -5,7 +5,7 @@ use chip8 as emulator;
 
 // TODO(#5): keyboard mapping
 
-// TODO: 64x32 display
+// TODO(#6): 64x32 display
 
 // TODO: ROM selector
 // provide rom path as an arg or interactive stdin
