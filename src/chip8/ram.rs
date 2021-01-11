@@ -1,9 +1,9 @@
 use std::fmt;
 
-const MEMORY_SIZE: usize = 4096;
-const RAM_END_OFFSET: usize = 0xFFF;
-const RAM_ETI_START_OFFSET: usize = 0x600;
-pub const RAM_START_OFFSET: usize = 0x200;
+pub const MEMORY_SIZE: usize = 4096;
+pub const RAM_END_OFFSET: u16 = 0xFFF;
+pub const _RAM_ETI_START_OFFSET: u16 = 0x600;
+pub const RAM_START_OFFSET: u16 = 0x200;
 
 pub struct Ram {
     memory: [u8;MEMORY_SIZE],
@@ -16,11 +16,11 @@ impl Ram {
         }
     }
     pub (in crate::chip8) fn read(&self, idx: usize) -> u8 {
-        assert!(idx <= RAM_END_OFFSET);
+        assert!(idx <= RAM_END_OFFSET as usize);
         self.memory[idx]
     }
     pub (in crate::chip8) fn write(&mut self, idx: usize, value: u8) {
-        assert!(idx <= RAM_END_OFFSET);
+        assert!(idx <= RAM_END_OFFSET as usize);
         self.memory[idx] = value;
     }
 }
