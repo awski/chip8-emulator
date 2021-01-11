@@ -1,3 +1,5 @@
+use std::fmt;
+
 const MEMORY_SIZE: usize = 4096;
 const RAM_END_OFFSET: usize = 0xFFF;
 const RAM_ETI_START_OFFSET: usize = 0x600;
@@ -21,16 +23,19 @@ impl Ram {
         assert!(idx <= RAM_END_OFFSET);
         self.memory[idx] = value;
     }
+}
 
-    pub fn dbg_print_memory(&mut self, row_size: usize) {
+impl fmt::Debug for Ram {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for i in 0..self.memory.len() {
-            if i % row_size == 0 {
-                print!("{:<5x}|", i);
+            if i % 8 == 0 {
+                write!(f, "{:<5x}|", i)?;
             }
-            print!("{:<5x}", self.memory[i]);
-            if i % row_size == row_size - 1 {
-                print!("\n");
+            write!(f, "{:<5x}", self.memory[i])?;
+            if i % 8 == 8 - 1 {
+                write!(f, "\n")?;
             }
         }
+        write!(f, "")
     }
 }

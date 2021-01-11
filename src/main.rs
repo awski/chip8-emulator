@@ -12,7 +12,7 @@ use chip8 as emulator;
 fn main() {
     let mut em = emulator::Chip8::new();
     em.load_rom("roms/1dcell.ch8");
-    em.ram.dbg_print_memory(10);
+    println!("{:?}", em.ram);
 }
 
 // fn decode(op: u16) {
