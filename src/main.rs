@@ -3,7 +3,7 @@ use chip8 as emulator;
 
 // TODO(#3): timers & sound
 
-// TODO: keyboard mapping
+// TODO(#5): keyboard mapping
 
 // TODO: 64x32 display
 
