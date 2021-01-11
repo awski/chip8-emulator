@@ -7,7 +7,7 @@ use chip8 as emulator;
 
 // TODO(#6): 64x32 display
 
-// TODO: ROM selector
+// TODO(#7): ROM selector
 // provide rom path as an arg or interactive stdin
 fn main() {
     let mut em = emulator::Chip8::new();
