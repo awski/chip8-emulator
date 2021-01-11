@@ -3,7 +3,7 @@
 
 // TODO(#2): chip8 instructions
 
-// TODO: super chip8 instruction
+// TODO(#4): super chip8 instruction
 // an extension of standard chip8 instruction
 
 pub struct Cpu {
