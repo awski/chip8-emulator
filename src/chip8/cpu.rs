@@ -1,6 +1,7 @@
 // TODO(#4): super chip8 instruction
 // an extension of standard chip8 instruction
 use super::ram;
+use std::fmt;
 
 pub struct Cpu {
     reg_vx: [u8; 16],
@@ -22,13 +23,6 @@ impl Cpu {
         }
     }
 
-    #[allow(dead_code)]
-    pub (in crate::chip8) fn print_vx(&self) {
-        for (i, element) in self.reg_vx.iter().enumerate() {
-            println!("{}. - {}", i, element);
-        }
-    }
-
     pub fn read_instr(&self, ram: &ram::Ram) -> u16{
         let lo = ram.read(self.prog_cnt as usize) as u16;
         let hi = ram.read(1 + self.prog_cnt as usize) as u16;
@@ -39,6 +33,7 @@ impl Cpu {
     // TODO(#10): refactor instructions
     pub fn exec_instr(&mut self, ram: &mut ram::Ram, op_code: u16) {
         let addr = op_code & 0x0FFF as u16;
+        #[allow(unused_variables)]
         let nibble = (op_code & 0x000F) as u8;
         let byte = (op_code & 0x00FF) as u8;
         let x = ((op_code & 0x0F00) >> 8) as u8;
@@ -136,5 +131,21 @@ impl Cpu { //Internals
 
     fn _get_vx(&self, reg_idx: u8) -> u8 {
         self.reg_vx[reg_idx as usize]
+    }
+}
+
+impl fmt::Debug for Cpu {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "----------------------\n")?;
+        write!(f, "PC:{:x} I:{:x} SP:{:}\n", self.prog_cnt, self.reg_idx, self.stack_ptr)?;
+        write!(f, "{:<8}| {:<8} {:<8}\n", "idx", "reg_vx", "stack")?;
+        for i in 0..16 {
+            write!(f, "{:<8x}| {:<8x} {:<8x}", i, self.reg_vx[i], self.stack[i])?;
+            if self.stack_ptr as usize == i {
+                write!(f, "<-")?;
+            }
+            write!(f, "\n")?;
+        }
+        write!(f, "----------------------\n")
     }
 }

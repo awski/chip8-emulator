@@ -37,8 +37,9 @@ impl Chip8 {
 
     pub fn dbg(&mut self) {
         loop {
-            let op_code = self.cpu.read_instr(&self.ram);
             io::stdin().read(&mut [0]).unwrap();
+            println!("{:?}", self.cpu);
+            let op_code = self.cpu.read_instr(&self.ram);
             self.cpu.exec_instr(&mut self.ram, op_code);
         }
     }
