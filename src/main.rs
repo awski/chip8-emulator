@@ -12,7 +12,7 @@ use std::env;
 // TODO(#7): ROM selector
 // provide rom path as an arg or interactive stdin
 
-// TODO: CPU tests
+// TODO(#11): CPU tests
 fn main() {
     let args: Vec<String> = env::args().collect();
     
