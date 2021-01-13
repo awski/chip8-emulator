@@ -1,0 +1,35 @@
+print!("CLS"); }
+print!("RET"); }
+print!("Sys addr"); }
+print!("JP addr"); }
+print!("CALL addr"); }
+print!("SE Vx, byte"); }
+print!("SNE Vx, byte"); }
+print!("SE Vx, Vy"); }
+print!("LD Vx, Vy"); }
+print!("ADD Vx, byte"); }
+print!("LD Vx, Vy"); }
+print!("OR Vx, Vy"); }
+print!("AND Vx, Vy"); }
+print!("XOR Vx, Vy"); }
+print!("ADD Vx, Vy"); }
+print!("SUB Vx, Vy"); }
+print!("SHR Vx {{,Vy}}"); }
+print!("SUBN Vx, Vy"); }
+print!("SHL Vx {{, Vy}}"); }
+print!("SNE Vx, Vy"); }
+print!("LD I, addr"); }
+print!("JP V0, addr"); }
+print!("RND Vx, byte"); }
+print!("DRW Vx, Vy, nibble"); }
+print!("SKP Vx"); }
+print!("SKNP Vx"); }
+print!("LD Vx, DT"); }
+print!("LD Vx, K"); }
+print!("LD DT, Vx"); }
+print!("LD ST, Vx"); }
+print!("ADD I, Vx"); }
+print!("LD F, Vx"); }
+print!("LD B, Vx"); }
+print!("LD [I], Vx"); }
+print!("LD Vx, [I]"); }

@@ -36,7 +36,7 @@ impl Cpu {
         u16::from_be(lo | (hi << 8))
     }
 
-    // TODO: refactor instructions
+    // TODO(#10): refactor instructions
     pub fn exec_instr(&mut self, ram: &mut ram::Ram, op_code: u16) {
         let addr = op_code & 0x0FFF as u16;
         let nibble = (op_code & 0x000F) as u8;
