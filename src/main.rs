@@ -1,6 +1,8 @@
 mod chip8;
 use chip8 as emulator;
 
+use std::env;
+
 // TODO(#3): timers & sound
 
 // TODO(#5): keyboard mapping
@@ -9,10 +11,26 @@ use chip8 as emulator;
 
 // TODO(#7): ROM selector
 // provide rom path as an arg or interactive stdin
+
+// TODO: CPU tests
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    
     let mut em = emulator::Chip8::new();
     em.load_rom("roms/1dcell.ch8");
     //println!("{:?}", em.ram);
-    let word = em.cpu.read_instr(em.ram);
-    em.cpu.exec_instr(word);
+    //let word = em.cpu.read_instr(em.ram);
+    //em.cpu.exec_instr(word);
+
+    match args.len() {
+        2 => {
+            match args[1].as_str() {
+                "dbg" => { em.dbg() },
+                _ => { em.run() }
+            }
+        }
+        _ => {
+            em.run();
+        }
+    }
 }
