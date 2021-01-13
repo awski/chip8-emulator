@@ -1,10 +1,10 @@
 // TODO(#4): super chip8 instruction
 // an extension of standard chip8 instruction
-
 use super::ram;
 
 pub struct Cpu {
     reg_vx: [u8; 16],
+    #[allow(dead_code)]
     reg_idx: u16,
     prog_cnt: u16,
     stack: [u16; 16],
@@ -12,7 +12,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub (in crate::chip8) fn new() -> Cpu {
+    pub (super) fn new() -> Cpu {
         Cpu {
             reg_vx:     [0; 16],
             reg_idx:    0,
@@ -29,36 +29,112 @@ impl Cpu {
         }
     }
 
-    #[allow(dead_code)]
-    fn set_vx(&mut self, reg_idx: u8, value: u8) {
+    pub fn read_instr(&self, ram: &ram::Ram) -> u16{
+        let lo = ram.read(self.prog_cnt as usize) as u16;
+        let hi = ram.read(1 + self.prog_cnt as usize) as u16;
+
+        u16::from_be(lo | (hi << 8))
+    }
+
+    // TODO: refactor instructions
+    pub fn exec_instr(&mut self, ram: &mut ram::Ram, op_code: u16) {
+        let addr = op_code & 0x0FFF as u16;
+        let nibble = (op_code & 0x000F) as u8;
+        let byte = (op_code & 0x00FF) as u8;
+        let x = ((op_code & 0x0F00) >> 8) as u8;
+        let y = ((op_code & 0x00F0) >> 4) as u8;
+
+        let op_tup = (
+            ((op_code & 0xF000) >> 12),
+            ((op_code & 0x0F00) >> 8),
+            ((op_code & 0x00F0) >> 4),
+            ((op_code & 0x000F) >> 0), 
+        );
+
+        match op_tup {
+            (0x0, 0x0, 0xE, 0x0) => {
+                println!("not impl: CLR");
+                self.prog_cnt += 2;
+            }
+            (0x0, 0x0, 0xE, 0xE) => {
+                println!("RET");
+                self.prog_cnt = self.stack_pop();
+            }
+            (0x1, _, _, _) => {
+                println!("JMP to addr 0x{:04x?}", addr);
+                self.prog_cnt = addr;
+            },
+            (0x2, _, _, _) => {
+                println!("Call subroutine at 0x{:04x?}", addr);
+                self.stack_push(self.prog_cnt);
+                self.prog_cnt = addr;
+            }
+            (0x6, _, _, _) => {
+                println!("Set V{:x?} = {:02x?}", x, byte);
+                self.reg_vx[x as usize] = byte;
+                self.prog_cnt += 2;
+            }
+            (0x7, _, _, _) => {
+                println!("Set V{:x?} = V{:x?} + {:02x?}", x, x, byte);
+                self.reg_vx[x as usize] = self.reg_vx[x as usize] + byte;
+                self.prog_cnt += 2;
+            }
+            (0x8, _, _, 0x0) => {
+                debug_assert!(x != y);
+
+                println!("Set V{:x?} = V{:x?}", x, y);
+                self.reg_vx[x as usize] = self.reg_vx[y as usize];
+                self.prog_cnt += 2;
+            }
+            (0xA, _, _, _) => {
+                println!("Set I = {:04x?}", addr);
+                self.reg_idx = addr;
+                self.prog_cnt += 2;
+            }
+            (0xD, _, _, _) => {
+                println!("not impl: Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.");
+                self.prog_cnt += 2;
+            }
+            (0xF, _, 0x2, 0x9) => {
+                println!("not impl: Set I = location of sprite for digit Vx.");
+                self.prog_cnt += 2;
+            }
+            (0xF, _, 0x3, 0x3) => {
+                println!("Store BCD representation of Vx in memory locations I, I+1, and I+2.");
+                ram.write(self.reg_idx as usize, self.reg_vx[x as usize] / 100);
+                ram.write((self.reg_idx as usize) + 1, (self.reg_vx[x as usize] % 100) /10);
+                ram.write((self.reg_idx as usize) + 2, self.reg_vx[x as usize] % 10);
+                self.prog_cnt += 2;
+            }
+            (0xF, _, 0x6, 0x5) => {
+                println!("Read registers V0 through Vx from memory starting at location I.");
+                for i in 0..self.reg_vx.len() {
+                    //ram.write((self.reg_idx + i as u16) as usize, self.reg_vx[i]);
+                    self.reg_vx[i] = ram.read((self.reg_idx + i as u16) as usize);
+                }
+                self.prog_cnt += 2;
+            }
+            _ => { panic!("OPCode unknown found: 0x{:04x?} tup: {:?}", op_code, op_tup); }
+        }
+    }
+}
+
+impl Cpu { //Internals
+    fn stack_push(&mut self, value: u16) {
+        self.stack[self.stack_ptr as usize] = value;
+        self.stack_ptr += 1;
+    }
+
+    fn stack_pop(&mut self) -> u16 {
+        self.stack_ptr -= 1;
+        self.stack[self.stack_ptr as usize]
+    }
+
+    fn _set_vx(&mut self, reg_idx: u8, value: u8) {
         self.reg_vx[reg_idx as usize] = value;
     }
 
-    #[allow(dead_code)]
-    fn get_vx(&self, reg_idx: u8) -> u8 {
+    fn _get_vx(&self, reg_idx: u8) -> u8 {
         self.reg_vx[reg_idx as usize]
-    }
-
-    pub fn read_instr(&self, ram: ram::Ram) -> u16{
-        let hi = ram.read(self.prog_cnt as usize) as u16;
-        let lo = ram.read(1 + self.prog_cnt as usize) as u16;
-
-        u16::from_be(hi | (lo << 8))
-        //println!("hi: 0x{:04x}, lo: 0x{:04x?}, instr: 0x{:X?}", hi,lo,instr);
-    }
-
-    // TODO(#2): chip8 instructions
-    pub fn exec_instr(&self, op: u16) {
-        let w = op & 0xF000 >> 12;
-        let x = op & 0x0F00 >> 8;
-        let y = op & 0x00F0 >> 4;
-        let z = op & 0x000F >> 0;
-
-        match (op & 0xF000, op & 0x0F00, op & 0x00F0, op & 0x000F) {
-            (0, 0, y, 0) => { println!("CLS"); }
-            (0, 0, y, z) => { println!("RET"); }
-            (w, _, _, _) => { println!("DRW Vx, Vy, nibble"); }
-            (_, _, _, _) => { println!("OPCode unknown found: {:x}", op); }
-        }
     }
 }

@@ -15,11 +15,11 @@ impl Ram {
             memory: [0; MEMORY_SIZE],
         }
     }
-    pub (in crate::chip8) fn read(&self, idx: usize) -> u8 {
+    pub (super) fn read(&self, idx: usize) -> u8 {
         assert!(idx <= RAM_END_OFFSET as usize);
         self.memory[idx]
     }
-    pub (in crate::chip8) fn write(&mut self, idx: usize, value: u8) {
+    pub (super) fn write(&mut self, idx: usize, value: u8) {
         assert!(idx <= RAM_END_OFFSET as usize);
         self.memory[idx] = value;
     }
