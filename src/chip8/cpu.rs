@@ -1,11 +1,10 @@
 // TODO(#4): super chip8 instruction
 // an extension of standard chip8 instruction
-use super::ram;
 use std::fmt;
+use super::ram;
 
 pub struct Cpu {
     reg_vx: [u8; 16],
-    #[allow(dead_code)]
     reg_idx: u16,
     prog_cnt: u16,
     stack: [u16; 16],
@@ -13,7 +12,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub (super) fn new() -> Cpu {
+    pub fn new() -> Cpu {
         Cpu {
             reg_vx:     [0; 16],
             reg_idx:    0,
@@ -24,16 +23,15 @@ impl Cpu {
     }
 
     pub fn read_instr(&self, ram: &ram::Ram) -> u16{
-        let lo = ram.read(self.prog_cnt as usize) as u16;
-        let hi = ram.read(1 + self.prog_cnt as usize) as u16;
+        let hi = ram.read(self.prog_cnt as usize) as u16;
+        let lo = ram.read(1 + self.prog_cnt as usize) as u16;
 
-        u16::from_be(lo | (hi << 8))
+        lo | (hi << 8)
     }
 
     // TODO(#10): refactor instructions
     pub fn exec_instr(&mut self, ram: &mut ram::Ram, op_code: u16) {
         let addr = op_code & 0x0FFF as u16;
-        #[allow(unused_variables)]
         let nibble = (op_code & 0x000F) as u8;
         let byte = (op_code & 0x00FF) as u8;
         let x = ((op_code & 0x0F00) >> 8) as u8;
