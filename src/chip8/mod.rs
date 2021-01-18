@@ -2,22 +2,29 @@
 mod tests;
 mod ram;
 mod cpu;
+mod display;
 
 use std::io::{self, Read};
-
 use cpu::Cpu;
 use ram::Ram;
+use display::Display;
 
 pub struct Chip8 {
     ram: Ram,
+    display: Display,
     cpu: Cpu,
 }
 impl Chip8 {
     pub fn new() -> Chip8 {
-        Chip8 {
+        let mut ch8 = Chip8 {
             ram: Ram::new(),
+            display: Display::new(),
             cpu: Cpu::new(),
-        }
+        };
+
+        Display::load_fonts(&mut ch8.ram);
+
+        return ch8
     }
     pub fn load_rom(&mut self, path: &str) {
         let data = match std::fs::read(path) {
