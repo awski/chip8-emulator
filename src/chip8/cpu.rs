@@ -31,6 +31,7 @@ impl Cpu {
     }
 
     // TODO(#10): refactor instructions
+    // TODO(#14): impl all instructions
     pub fn exec_instr(&mut self, ram: &mut ram::Ram, display: &mut display::Display, op_code: u16) {
         let addr = op_code & 0x0FFF as u16;
         let nibble = (op_code & 0x000F) as u8;
