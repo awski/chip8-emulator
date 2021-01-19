@@ -47,7 +47,7 @@ impl Chip8 {
         loop {
             io::stdin().read(&mut [0]).unwrap();
             println!("{:?}", self.cpu);
-            //println!("{:?}", self.display);
+            println!("{:?}", self.display);
             let op_code = self.cpu.read_instr(&self.ram);
             self.cpu.exec_instr(&mut self.ram, &mut self.display, op_code);
         }

@@ -31,7 +31,6 @@ impl Cpu {
     }
 
     // TODO(#10): refactor instructions
-    // TODO(#14): impl all instructions
     pub fn exec_instr(&mut self, ram: &mut ram::Ram, display: &mut display::Display, op_code: u16) {
         let addr = op_code & 0x0FFF as u16;
         let nibble = (op_code & 0x000F) as u8;
@@ -66,6 +65,24 @@ impl Cpu {
                 self.stack_push(self.prog_cnt);
                 self.prog_cnt = addr;
             }
+            (0x3, _, _, _) => {
+                println!("Skip next instruction if V{:x?} = byte({:x?}).", x, byte);
+                self.prog_cnt += 
+                    if self.reg_vx[x as usize] == byte {
+                        4
+                    } else {
+                        2
+                    }
+            }
+            (0x4, _, _, _) => {
+                println!("Skip next instruction if V{:x?} != byte({:x?})", x, byte);
+                self.prog_cnt += 
+                    if self.reg_vx[x as usize] != byte {
+                        4
+                    } else {
+                        2
+                    }
+            }
             (0x6, _, _, _) => {
                 println!("Set V{:x?} = {:02x?}", x, byte);
                 self.reg_vx[x as usize] = byte;
@@ -73,15 +90,45 @@ impl Cpu {
             }
             (0x7, _, _, _) => {
                 println!("Set V{:x?} = V{:x?} + {:02x?}", x, x, byte);
-                self.reg_vx[x as usize] = self.reg_vx[x as usize] + byte;
+                self.reg_vx[x as usize] = self.reg_vx[x as usize].wrapping_add(byte);
                 self.prog_cnt += 2;
             }
             (0x8, _, _, 0x0) => {
                 debug_assert!(x != y);
-
                 println!("Set V{:x?} = V{:x?}", x, y);
                 self.reg_vx[x as usize] = self.reg_vx[y as usize];
                 self.prog_cnt += 2;
+            }
+            (0x8, _, _, 0x2) => {
+                println!("Set Vx = Vx AND Vy.");
+                self.reg_vx[x as usize] &= self.reg_vx[y as usize];
+                self.prog_cnt += 2;
+            }
+            (0x8, _, _, 0x7) => {
+                println!("Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.");
+                self.reg_vx[x as usize] = self.reg_vx[y as usize].wrapping_sub(self.reg_vx[x as usize]);
+                if self.reg_vx[x as usize] > self.reg_vx[y as usize] {
+                    self.reg_vx[0xF] = 1
+                }
+                else {
+                    self.reg_vx[0xF] = 0
+                }
+                self.prog_cnt += 2;
+            }
+            (0x8, _, _, 0xE) => {
+                println!("Set V{:x?} = V{:x?} SHL 1.", x, x);
+                self.reg_vx[0xF] = self.reg_vx[x as usize] & 0b1000_0000;
+                self.reg_vx[x as usize] <<= 1;
+                self.prog_cnt += 2;
+            }
+            (0x9, _, _, 0x0) => {
+                println!("Skip next instruction if V{:x?} != V{:x?}", x, y);
+                self.prog_cnt += 
+                    if self.reg_vx[x as usize] != self.reg_vx[y as usize] {
+                        4
+                    } else {
+                        2
+                    }
             }
             (0xA, _, _, _) => {
                 println!("Set I = {:04x?}", addr);
@@ -105,6 +152,14 @@ impl Cpu {
                     
                 self.prog_cnt += 2;
             }
+            (0xF, _, 0x0, 0x7) => {
+                println!("not impl: Set Vx = delay timer value.");
+                self.prog_cnt += 2;
+            }
+            (0xF, _, 0x1, 0x5) => {
+                println!("not impl: Set delay timer = Vx.");
+                self.prog_cnt += 2;
+            }
             (0xF, _, 0x2, 0x9) => {
                 println!("Set I = location of sprite for digit Vx.");
                 self.reg_idx = (self.reg_vx[x as usize] as u16) * 5;
@@ -119,9 +174,9 @@ impl Cpu {
             }
             (0xF, _, 0x6, 0x5) => {
                 println!("Read registers V0 through Vx from memory starting at location I.");
-                for i in 0..self.reg_vx.len() {
+                for i in 0..x {
                     //ram.write((self.reg_idx + i as u16) as usize, self.reg_vx[i]);
-                    self.reg_vx[i] = ram.read((self.reg_idx + i as u16) as usize);
+                    self.reg_vx[i as usize] = ram.read((self.reg_idx + i as u16) as usize);
                 }
                 self.prog_cnt += 2;
             }
