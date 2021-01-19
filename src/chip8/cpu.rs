@@ -1,11 +1,11 @@
 // TODO(#4): super chip8 instruction
 // an extension of standard chip8 instruction
-use super::ram;
 use std::fmt;
+use super::ram;
+use super::display;
 
 pub struct Cpu {
     reg_vx: [u8; 16],
-    #[allow(dead_code)]
     reg_idx: u16,
     prog_cnt: u16,
     stack: [u16; 16],
@@ -13,7 +13,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub (super) fn new() -> Cpu {
+    pub fn new() -> Cpu {
         Cpu {
             reg_vx:     [0; 16],
             reg_idx:    0,
@@ -24,16 +24,15 @@ impl Cpu {
     }
 
     pub fn read_instr(&self, ram: &ram::Ram) -> u16{
-        let lo = ram.read(self.prog_cnt as usize) as u16;
-        let hi = ram.read(1 + self.prog_cnt as usize) as u16;
+        let hi = ram.read(self.prog_cnt as usize) as u16;
+        let lo = ram.read(1 + self.prog_cnt as usize) as u16;
 
-        u16::from_be(lo | (hi << 8))
+        lo | (hi << 8)
     }
 
     // TODO(#10): refactor instructions
-    pub fn exec_instr(&mut self, ram: &mut ram::Ram, op_code: u16) {
+    pub fn exec_instr(&mut self, ram: &mut ram::Ram, display: &mut display::Display, op_code: u16) {
         let addr = op_code & 0x0FFF as u16;
-        #[allow(unused_variables)]
         let nibble = (op_code & 0x000F) as u8;
         let byte = (op_code & 0x00FF) as u8;
         let x = ((op_code & 0x0F00) >> 8) as u8;
@@ -48,12 +47,14 @@ impl Cpu {
 
         match op_tup {
             (0x0, 0x0, 0xE, 0x0) => {
-                println!("not impl: CLR");
+                println!("CLR");
+                display.clear();
                 self.prog_cnt += 2;
             }
             (0x0, 0x0, 0xE, 0xE) => {
                 println!("RET");
                 self.prog_cnt = self.stack_pop();
+                self.prog_cnt += 2;
             }
             (0x1, _, _, _) => {
                 println!("JMP to addr 0x{:04x?}", addr);
@@ -87,11 +88,25 @@ impl Cpu {
                 self.prog_cnt += 2;
             }
             (0xD, _, _, _) => {
-                println!("not impl: Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.");
+                let pos_x = self.reg_vx[x as usize] as usize;
+                let pos_y = self.reg_vx[y as usize] as usize;
+                let sprite_start_idx = self.reg_idx as usize;
+                let sprite_end_idx = self.reg_idx as usize + nibble as usize;
+                println!("Display {}-byte sprite starting at memory location I({}) at (V{}, V{}), set VF = x.", nibble, self.reg_idx ,x, y);
+                
+                if display.fill_screen(
+                    &ram.memory[sprite_start_idx..sprite_end_idx], pos_x, pos_y) == true {
+                    self.reg_vx[0xF] = 0x01;
+                }
+                else {
+                    self.reg_vx[0xF] = 0x00;
+                }
+                    
                 self.prog_cnt += 2;
             }
             (0xF, _, 0x2, 0x9) => {
-                println!("not impl: Set I = location of sprite for digit Vx.");
+                println!("Set I = location of sprite for digit Vx.");
+                self.reg_idx = (self.reg_vx[x as usize] as u16) * 5;
                 self.prog_cnt += 2;
             }
             (0xF, _, 0x3, 0x3) => {
@@ -119,7 +134,8 @@ impl Cpu { //Internals
         self.stack[self.stack_ptr as usize] = value;
         self.stack_ptr += 1;
     }
-
+    // TODO(#12): stack pop bug
+    // top of the stack is not being removed
     fn stack_pop(&mut self) -> u16 {
         self.stack_ptr -= 1;
         self.stack[self.stack_ptr as usize]
