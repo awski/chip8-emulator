@@ -54,6 +54,7 @@ impl Cpu {
             (0x0, 0x0, 0xE, 0xE) => {
                 println!("RET");
                 self.prog_cnt = self.stack_pop();
+                self.prog_cnt += 2;
             }
             (0x1, _, _, _) => {
                 println!("JMP to addr 0x{:04x?}", addr);
@@ -91,6 +92,7 @@ impl Cpu {
                 let pos_y = self.reg_vx[y as usize] as usize;
                 let sprite_start_idx = self.reg_idx as usize;
                 let sprite_end_idx = self.reg_idx as usize + nibble as usize;
+                println!("Display {}-byte sprite starting at memory location I({}) at (V{}, V{}), set VF = x.", nibble, self.reg_idx ,x, y);
                 
                 if display.fill_screen(
                     &ram.memory[sprite_start_idx..sprite_end_idx], pos_x, pos_y) == true {
@@ -100,7 +102,6 @@ impl Cpu {
                     self.reg_vx[0xF] = 0x00;
                 }
                     
-                println!("Display {}-byte sprite starting at memory location I({}) at (V{}, V{}), set VF = {}.", nibble, self.reg_idx ,x, y, self.reg_vx[0xF]);
                 self.prog_cnt += 2;
             }
             (0xF, _, 0x2, 0x9) => {

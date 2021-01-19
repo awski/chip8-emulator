@@ -38,17 +38,12 @@ impl Display {
         }
     }
     pub fn fill_screen(&mut self, sprite: &[u8], pos_x: usize, pos_y: usize) -> bool{
-        assert!(pos_x < SCREEN_WIDTH && pos_y < SCREEN_HEIGHT);
         let h = sprite.len();
-        //*pos_x %= SCREEN_WIDTH;
-        //*pos_y %= SCREEN_HEIGHT;
         let mut col = false;
-
         for j in 0..h {
             for i in 0..8 {
                 let local_x = (pos_x + i) % SCREEN_WIDTH;
                 let local_y = (pos_y + j) % SCREEN_HEIGHT;
-
                 if (sprite[j] & (0b1000_0000 >> i)) != 0b0000_0000 {
                     if self.screen[local_y][local_x] == 0b0000_0001 {
                         col = true;
@@ -57,16 +52,15 @@ impl Display {
                 }
             }
         }
-
         col
     }
+
     pub fn clear(&mut self) {
         self.screen = [[0u8; SCREEN_WIDTH]; SCREEN_HEIGHT];
     }
 
     pub fn get_pixel(&self, pos_x: usize, pos_y: usize) -> u8 {
         assert!(pos_x < SCREEN_WIDTH && pos_y < SCREEN_HEIGHT);
-
         self.screen[pos_y][pos_x]
     }
 }
