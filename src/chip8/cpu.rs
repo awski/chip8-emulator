@@ -133,7 +133,8 @@ impl Cpu { //Internals
         self.stack[self.stack_ptr as usize] = value;
         self.stack_ptr += 1;
     }
-
+    // TODO(#12): stack pop bug
+    // top of the stack is not being removed
     fn stack_pop(&mut self) -> u16 {
         self.stack_ptr -= 1;
         self.stack[self.stack_ptr as usize]
