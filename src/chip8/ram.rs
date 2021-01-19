@@ -6,7 +6,7 @@ const _RAM_ETI_START_OFFSET: u16 = 0x600;
 pub const RAM_START_OFFSET: u16 = 0x200;
 
 pub struct Ram {
-    memory: [u8;MEMORY_SIZE],
+    pub memory: [u8;MEMORY_SIZE],
 }
 
 impl Ram {

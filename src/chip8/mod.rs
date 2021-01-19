@@ -38,7 +38,8 @@ impl Chip8 {
     pub fn run(&mut self) {
         loop {
             let op_code = self.cpu.read_instr(&self.ram);
-            self.cpu.exec_instr(&mut self.ram, op_code);
+            self.cpu.exec_instr(&mut self.ram, &mut self.display, op_code);
+            println!("{:?}", self.display);
         }
     }
 
@@ -46,8 +47,9 @@ impl Chip8 {
         loop {
             io::stdin().read(&mut [0]).unwrap();
             println!("{:?}", self.cpu);
+            //println!("{:?}", self.display);
             let op_code = self.cpu.read_instr(&self.ram);
-            self.cpu.exec_instr(&mut self.ram, op_code);
+            self.cpu.exec_instr(&mut self.ram, &mut self.display, op_code);
         }
     }
 }

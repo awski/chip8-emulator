@@ -2,6 +2,7 @@
 // an extension of standard chip8 instruction
 use std::fmt;
 use super::ram;
+use super::display;
 
 pub struct Cpu {
     reg_vx: [u8; 16],
@@ -30,7 +31,7 @@ impl Cpu {
     }
 
     // TODO(#10): refactor instructions
-    pub fn exec_instr(&mut self, ram: &mut ram::Ram, op_code: u16) {
+    pub fn exec_instr(&mut self, ram: &mut ram::Ram, display: &mut display::Display, op_code: u16) {
         let addr = op_code & 0x0FFF as u16;
         let nibble = (op_code & 0x000F) as u8;
         let byte = (op_code & 0x00FF) as u8;
@@ -46,7 +47,8 @@ impl Cpu {
 
         match op_tup {
             (0x0, 0x0, 0xE, 0x0) => {
-                println!("not impl: CLR");
+                println!("CLR");
+                display.clear();
                 self.prog_cnt += 2;
             }
             (0x0, 0x0, 0xE, 0xE) => {
@@ -85,11 +87,25 @@ impl Cpu {
                 self.prog_cnt += 2;
             }
             (0xD, _, _, _) => {
-                println!("not impl: Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.");
+                let pos_x = self.reg_vx[x as usize] as usize;
+                let pos_y = self.reg_vx[y as usize] as usize;
+                let sprite_start_idx = self.reg_idx as usize;
+                let sprite_end_idx = self.reg_idx as usize + nibble as usize;
+                
+                if display.fill_screen(
+                    &ram.memory[sprite_start_idx..sprite_end_idx], pos_x, pos_y) == true {
+                    self.reg_vx[0xF] = 0x01;
+                }
+                else {
+                    self.reg_vx[0xF] = 0x00;
+                }
+                    
+                println!("Display {}-byte sprite starting at memory location I({}) at (V{}, V{}), set VF = {}.", nibble, self.reg_idx ,x, y, self.reg_vx[0xF]);
                 self.prog_cnt += 2;
             }
             (0xF, _, 0x2, 0x9) => {
-                println!("not impl: Set I = location of sprite for digit Vx.");
+                println!("Set I = location of sprite for digit Vx.");
+                self.reg_idx = (self.reg_vx[x as usize] as u16) * 5;
                 self.prog_cnt += 2;
             }
             (0xF, _, 0x3, 0x3) => {
