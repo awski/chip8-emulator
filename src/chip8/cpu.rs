@@ -1,6 +1,8 @@
 // TODO(#4): super chip8 instruction
 // an extension of standard chip8 instruction
 use std::fmt;
+use display::Display;
+
 use super::ram;
 use super::display;
 
@@ -46,25 +48,10 @@ impl Cpu {
         );
 
         match op_tup {
-            (0x0, 0x0, 0xE, 0x0) => {
-                println!("CLR");
-                display.clear();
-                self.prog_cnt += 2;
-            }
-            (0x0, 0x0, 0xE, 0xE) => {
-                println!("RET");
-                self.prog_cnt = self.stack_pop();
-                self.prog_cnt += 2;
-            }
-            (0x1, _, _, _) => {
-                println!("JMP to addr 0x{:04x?}", addr);
-                self.prog_cnt = addr;
-            },
-            (0x2, _, _, _) => {
-                println!("Call subroutine at 0x{:04x?}", addr);
-                self.stack_push(self.prog_cnt);
-                self.prog_cnt = addr;
-            }
+            (0x0, 0x0, 0xE, 0x0) => self.clr(display),
+            (0x0, 0x0, 0xE, 0xE) => self.ret(),
+            (0x1,   _,   _,   _) => self.jmp(addr),
+            (0x2,   _,   _,   _) => self.call(addr),
             (0x3, _, _, _) => {
                 println!("Skip next instruction if V{:x?} = byte({:x?}).", x, byte);
                 self.prog_cnt += 
@@ -196,12 +183,27 @@ impl Cpu { //Internals
         self.stack[self.stack_ptr as usize]
     }
 
-    fn _set_vx(&mut self, reg_idx: u8, value: u8) {
-        self.reg_vx[reg_idx as usize] = value;
+    fn clr(&mut self, display: &mut display::Display) {
+        println!("CLR");
+        display.clear();
+        self.prog_cnt += 2;
     }
 
-    fn _get_vx(&self, reg_idx: u8) -> u8 {
-        self.reg_vx[reg_idx as usize]
+    fn call(&mut self, addr: u16) {
+        println!("Call subroutine at 0x{:04x?}", addr);
+        self.stack_push(self.prog_cnt);
+        self.prog_cnt = addr;
+    }
+
+    fn ret(&mut self) {
+        println!("RET");
+        self.prog_cnt = self.stack_pop();
+        self.prog_cnt += 2;
+    }
+
+    fn jmp(&mut self, addr: u16) {
+        println!("JMP to addr 0x{:04x?}", addr);
+        self.prog_cnt = addr;
     }
 }
 
