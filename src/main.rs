@@ -13,6 +13,8 @@ use std::env;
 // TODO(#11): CPU tests
 
 // TODO(#17): SDL2(or similar) gfx display
+
+// TODO(#18): rework unit tests
 fn main() {
     let args: Vec<String> = env::args().collect();
     
