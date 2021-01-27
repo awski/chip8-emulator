@@ -11,6 +11,8 @@ use std::env;
 // provide rom path as an arg or interactive stdin
 
 // TODO(#11): CPU tests
+
+// TODO(#17): SDL2(or similar) gfx display
 fn main() {
     let args: Vec<String> = env::args().collect();
     
